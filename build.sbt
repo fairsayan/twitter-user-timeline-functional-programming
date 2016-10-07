@@ -1,16 +1,14 @@
-name := """play-getting-started"""
+name := "twitter-user-timeline-functional-programming"
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.7"
 
+libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ )
 libraryDependencies ++= Seq(
-  jdbc,
-  cache,
-  "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
-  ws
+  "org.twitter4j" % "twitter4j-core" % "4.0.4",
+  "org.twitter4j" % "twitter4j-stream" % "4.0.4"
 )
 
-libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ )

@@ -2,34 +2,34 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import play.api.cache.Cache
 import play.api.Play.current
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
-import play.api.db._
+import collection.JavaConversions._
+
+import twitter4j.TwitterFactory
+import twitter4j.Paging
+import twitter4j.Status
+import twitter4j.Twitter
+import twitter4j.conf.ConfigurationBuilder
 
 object Application extends Controller {
-
   def index = Action {
-    Ok(views.html.index(null))
-  }
+    val cb = new ConfigurationBuilder()
+    val page = new Paging (1, 50)
+    cb.setDebugEnabled(false)
+        .setOAuthConsumerKey("TRtT8qih3a6bSKcyXrjVtSdg8")
+        .setOAuthConsumerSecret("fITOY2jQsWm4IpNid3ItloDlq0zoNyOBAMdmXgX92696rDoVN6")
+        .setOAuthAccessToken("96369337-PLCiXx2WIUQynygg5VsfPkdd5DBwwLLSlfRUoTh9z")
+        .setOAuthAccessTokenSecret("E2hViGNE5pi9S6Qgtf3FCZ2aSkSczM9qKagTMY1A6yWuF")
 
-  def db = Action {
-    var out = ""
-    val conn = DB.getConnection()
-    try {
-      val stmt = conn.createStatement
-
-      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)")
-      stmt.executeUpdate("INSERT INTO ticks VALUES (now())")
-
-      val rs = stmt.executeQuery("SELECT tick FROM ticks")
-
-      while (rs.next) {
-        out += "Read from DB: " + rs.getTimestamp("tick") + "\n"
-      }
-    } finally {
-      conn.close()
-    }
-    Ok(out)
+    val tf = new TwitterFactory(cb.build)
+    val twitter = tf.getInstance
+    val statuses = twitter.getUserTimeline("MakerFaireRome", page)
+    val groups = statuses.groupBy( status => if (status.isRetweet) status.getRetweetedStatus.getUser.getScreenName else status.getUser.getScreenName)
+    val result = groups.map(list => (list._1, list._2.size))
+    val json = Json.toJson(result)
+    Ok(json)
   }
 }
