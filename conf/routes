@@ -3,6 +3,8 @@
 # ~~~~
 
 # Home page
+OPTIONS  /                           controllers.Application.options(path="")
+OPTIONS  /*path                      controllers.Application.options(path)
 GET     /                           controllers.Application.index
 
 # Map static resources from the /public folder to the /assets URL path

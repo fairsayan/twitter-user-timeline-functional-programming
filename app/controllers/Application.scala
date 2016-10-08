@@ -6,6 +6,9 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import collection.JavaConversions._
 
 import twitter4j.TwitterFactory
@@ -13,6 +16,20 @@ import twitter4j.Paging
 import twitter4j.Status
 import twitter4j.Twitter
 import twitter4j.conf.ConfigurationBuilder
+
+// Adds the CORS header
+case class CorsAction[A](action: Action[A]) extends Action[A] {
+
+    def apply(request: Request[A]): Future[Result] = {
+        action(request).map(result => result.withHeaders(http.HeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN -> "*",
+        http.HeaderNames.ALLOW -> "*",
+        http.HeaderNames.ACCESS_CONTROL_ALLOW_METHODS -> "POST, GET, PUT, DELETE, OPTIONS",
+        http.HeaderNames.ACCESS_CONTROL_ALLOW_HEADERS -> "Origin, X-Requested-With, Content-Type, Accept, Referer, User-Agent"
+        ))
+    }
+
+    lazy val parser = action.parser
+}
 
 object Application extends Controller {
   def index = Action {
@@ -32,4 +49,11 @@ object Application extends Controller {
     val json = Json.toJson(result)
     Ok(json)
   }
+
+  def options(path: String) = CorsAction {
+        Action { request =>
+            Ok.withHeaders(ACCESS_CONTROL_ALLOW_HEADERS -> Seq(AUTHORIZATION, CONTENT_TYPE, "Target-URL").mkString(","))
+        }
+    }
 }
+

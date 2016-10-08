@@ -6,6 +6,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
 scalaVersion := "2.11.7"
 
+libraryDependencies += filters
+
 libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _ )
 libraryDependencies ++= Seq(
   "org.twitter4j" % "twitter4j-core" % "4.0.4",
